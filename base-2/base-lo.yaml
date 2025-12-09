@@ -1,0 +1,31 @@
+# UMRT
+# Base Station Low
+
+/**/*:
+  ros__parameters:
+    network_interface: "network_bridge::UdpInterface"
+
+    UdpInterface:
+      local_address: "192.168.1.1"
+      receive_port: 5011  # lo base port
+      remote_address: "192.168.1.2"
+      send_port: 5012     # lo rover port
+  
+  
+    # default_rate: 100.0
+    # default_zstd_level: 3
+    publish_stale_data: False
+
+    #---------------------------------------------
+    # config local topics to subscribe (outgoing)
+    #---------------------------------------------
+
+    topics:
+      - "/controls"
+    subscribe_namespace: "/rv_lo"  # prefix of local topics to subscribe to outgoing
+    
+    
+    #---------------------------------------------
+    # config incoming topics to publish (incoming)
+    #---------------------------------------------
+    publish_namespace: "/rv_lo"    # add prefix of incoming publishing topics
