@@ -20,7 +20,7 @@
 # Instructions
 
 ## 1. create humble container with network_bridge
-(Dockerfile file attached)
+(Dockerfile file attached, copied from UMRT base station Dockerfile lol)
 
 ## 2. Build container 
 ```bash
@@ -28,7 +28,8 @@ $ docker build -t bridge_test:v1 .
 ```
 
 ## 3. Create two docker nets
-   
+Everntually assign these docker networks to specific ethernet adapters!! (update!!!)
+
 ```bash
 $ docker network create -d ipvlan --subnet 192.168.1.0/24 -o --gateway=192.168.1.200 bridge_lo
 $ docker network create -d ipvlan --subnet 192.168.2.0/24 -o --gateway=192.168.2.200 bridge_hi
@@ -38,7 +39,7 @@ $ docker network create -d ipvlan --subnet 192.168.2.0/24 -o --gateway=192.168.2
 **START BASE STATION FIRST SO THAT IT TAKES THE CORRECT IPs**  
 Theres gotta be some way to manually configure the second IP I think.  
 
-Currently this command I believe assigns the ip under bridge_hi to 192.168.2.1. The IP for the low bridge is automatically assigned (update!!!)
+Currently this command assigns the ip under bridge_hi to 192.168.2.1 and then joins bridge_lo with not specific. The IP for the low bridge is automatically assigned (update!!!)
 
 
 Create container `bridge_base`:
@@ -117,7 +118,7 @@ $ ros2 launch network_bridge udp.launch.py
 
 
 ### Base Station Container
-Differentiate ROS DOMAIN ID between rover and base station (rover = 1)
+Differentiate ROS DOMAIN ID between rover and base station (base station = 1)
 ```bash
 $ export ROS_DOMAIN_ID=1
 ```
@@ -145,10 +146,9 @@ source /opt/ros/humble/setup.bash
 
 
 ### test pub sub
-So far, its configured so the ROS2 topic prefix is:  
-On Rover send to Base Station? `/bs_lo/<topic>`
+Its configured now so that the ROS2 topic prefix determines what to communicate over:
 
-<!-- |             | Publish from Rover | Publish from Base Station |
+<!-- |             | Send to Base Station | Send to Rover |
 |----------------|-----------------|---------------------|
 | Use Low Bridge | `/bs_lo/<name>` | `/rv_lo/<name>` |
 | Use High Bridge| `/bs_hi/<name>` | `/rv_hi/<name>` | -->
@@ -157,10 +157,8 @@ Connor update this
 
 |       | Use Low Bridge | Use High Bridge |
 |----------------|-----------------|------------|
-| Rover->Base (Rover) | `/bs_lo/<name>` | `/bs_hi/<name>` |
-| Base->Rover (Base) | `/rv_lo/<name>` | `/rv_hi/<name>` |
-| Rover->Base (Base) | `/rv_lo/<name>` | `/rv_hi/<name>` |
-| Base->Rover (Rover) | `/bs_lo/<name>` | `/bs_hi/<name>` |
+| Send to Base Station | `/bs_lo/<name>` | `/bs_hi/<name>` |
+| Send to Rover | `/rv_lo/<name>` | `/rv_hi/<name>` |
 
 #### Rover side:
 ```bash
