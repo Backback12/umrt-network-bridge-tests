@@ -1,20 +1,24 @@
 #!/bin/bash
 set -e
 
-echo "Creating docker networks..."
+NET_HI="bridge_hi"
+NET_LO="bridge_lo"
 
+
+
+echo "Creating docker networks..."
 # LO NETWORK
 docker network create -d ipvlan \
-    --subnet 192.168.1.0/24 \
-    --gateway=192.168.1.200 \
-    bridge_lo
+    --subnet 10.0.1.0/24 \
+    --gateway=10.0.1.200 \
+    "$NET_LO"
     # -o parent=di-12345678 \
 
 # HI NETWORK
 docker network create -d ipvlan \
-    --subnet 192.168.2.0/24 \
-    --gateway=192.168.2.200 \ 
-    bridge_hi
+    --subnet 10.0.2.0/24 \
+    --gateway=10.0.2.200 \
+    "$NET_HI"
     # -o parent=di-12345678 \
 
 echo "brige_lo and bridge_hi docker networks created."

@@ -5,9 +5,9 @@ CONTAINER_NAME="bridge_base"
 IMAGE="bridge_test:v1"
 
 NET_HI="bridge_hi"
-IP_HI="192.168.2.1"
+IP_HI="10.0.2.1"
 NET_LO="bridge_lo"
-IP_LO="192.168.1.1"
+IP_LO="10.0.1.1"
 
 
 

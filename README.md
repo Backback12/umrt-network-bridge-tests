@@ -171,11 +171,13 @@ ros2 topic echo /rv_lo/telemetry
 ```
 
 # Analyze networks
+Show the network interfaces for the docker networks you created:
 ```
-docker network list
+docker network list | grep "bridge_"
 ```
 Copy NETWORK ID, add "di-" in front of it. Or "br-"?  
 Just lok for similar id when you run `ip link show` on the host.
+
 
 <!-- 
     e0896d43699f 
