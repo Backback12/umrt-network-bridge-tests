@@ -49,7 +49,7 @@ $ docker run -it --rm --name bridge_base --network=bridge_hi --ip=192.168.2.1 --
 ```
 Source ROS2:
 ```
-./ros_entrypoint.sh
+source ./ros_entrypoint.sh
 ```
 
 <!-- Differentiate ROS DOMAIN ID between rover and base station (base station = 1)
@@ -71,7 +71,7 @@ $ docker run -it --rm --name bridge_rover --network=bridge_hi --ip=192.168.2.2 -
 ```
 Source ROS2:
 ```
-./ros_entrypoint.sh
+source ./ros_entrypoint.sh
 ```
 
 <!-- Differentiate ROS DOMAIN ID between rover and base station (rover = 2)
