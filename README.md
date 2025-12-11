@@ -170,3 +170,32 @@ ros2 topic pub -r 1 /bs_lo/telemetry std_msgs/msg/String "{data: 'Hello'}"
 ros2 topic echo /rv_lo/telemetry
 ```
 
+# Analyze networks
+```
+docker network list
+```
+Copy NETWORK ID, add "di-" in front of it. Or "br-"?  
+Just lok for similar id when you run `ip link show` on the host.
+
+<!-- 
+    e0896d43699f 
+    192b397e24b4
+-->
+Analyze network:
+```
+sudo iftop -i di-<docker_network_id>
+```
+
+
+
+# Isolating Networks
+On host, test disconnects:
+```
+docker network disconnect bridge_hi bridge_rover
+```
+bridge_lo is still connected and transmitting!!!!!!
+
+```
+docker network disconnect bridge_lo bridge_rover
+```
+bridge_hi is still connected and transmitting!!!!!!
