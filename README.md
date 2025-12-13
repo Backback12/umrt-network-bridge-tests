@@ -1,19 +1,19 @@
-# Comms 25-26 network_bridge setup
+# Comms 25-26 network_bridge test setup
 
 
 #### docker network `bridge_lo`  
-* subnet: `192.168.1.0/24`
-* gateway: `192.168.1.200`
+* subnet: `10.0.1.0/24`
+* gateway: `10.0.1.200`
 
 #### docker network `bridge_hi`
-* subnet: `192.168.2.0/24`
-* gateway: `192.168.2.200`
+* subnet: `10.0.2.0/24`
+* gateway: `10.0.2.200`
 
 
 | | Base Station | Rover |
 |--|--|--|
-| Low (900MHz) | 192.168.1.1 | 192.168.1.2 |
-| High (2.4GHz) | 192.168.2.1 | 192.168.2.2 |
+| Low (900MHz) | 10.0.1.1 | 10.0.1.2 |
+| High (2.4GHz) | 10.0.2.1 | 10.0.2.2 |
 
 
 
@@ -30,22 +30,24 @@ $ docker build -t bridge_test:v1 .
 ## 3. Create two docker nets
 Everntually assign these docker networks to specific ethernet adapters!! (update!!!)
 
-```bash
+<!--```bash
 $ docker network create -d ipvlan --subnet 192.168.1.0/24 -o --gateway=192.168.1.200 bridge_lo
 $ docker network create -d ipvlan --subnet 192.168.2.0/24 -o --gateway=192.168.2.200 bridge_hi
+```-->
+```bash
+./create_networks.sh
 ```
 
 ## 4. Start Base Station Container 
-**START BASE STATION FIRST SO THAT IT TAKES THE CORRECT IPs**  
+<!--**START BASE STATION FIRST SO THAT IT TAKES THE CORRECT IPs**  
 Theres gotta be some way to manually configure the second IP I think.  
 
-Currently this command assigns the ip under bridge_hi to 192.168.2.1 and then joins bridge_lo with not specific. The IP for the low bridge is automatically assigned (update!!!)
+Currently this command assigns the ip under bridge_hi to 192.168.2.1 and then joins bridge_lo with not specific. The IP for the low bridge is automatically assigned (update!!!)-->
 
 
-Create container `bridge_base`:
+Create and run container `bridge_base`:
 ```bash
-$ docker run -it --rm --name bridge_base --network=bridge_hi --ip=192.168.2.1 --network=bridge_lo bridge_test:v1
-
+./start_base.sh
 ```
 Source ROS2:
 ```
@@ -61,13 +63,9 @@ $ export ROS_DOMAIN_ID=1
 
 
 ## 5. Start Rover Container
-<!-- ```bash
-$ docker run -it --rm --name bridge_rover --network=bridge_hi --ip=192.168.2.2 --network=bridge_lo --ip=192.168.1.2 bridge_test:v1
-```
-It didnt like it when I put two ip parameters, so I just put one and then it auto configured the second IP properly??? -->
-Create container `bridge_rover`:
+Create and run container `bridge_rover`:
 ```bash
-$ docker run -it --rm --name bridge_rover --network=bridge_hi --ip=192.168.2.2 --network=bridge_lo bridge_test:v1
+./start_rover.sh
 ```
 Source ROS2:
 ```
@@ -106,6 +104,8 @@ nano /opt/ros/humble/share/network_bridge/launch/udp.launch.py
 
 
 ## 7. Start Tunnels
+You must differentiate ROS Domain IDs or else all topics will be available regularly and you won't isolate topics through networks properly.
+
 ### Rover Container
 Differentiate ROS DOMAIN ID between rover and base station (rover = 2)
 ```bash
@@ -138,15 +138,23 @@ $ docker exec -it <bridge_rover/bridge_base> bash
 ```
 Source ROS2:
 ```
-source /opt/ros/humble/setup.bash
+source ./ros_entrypoint.sh
 ```
 
 
 
 
 
-### test pub sub
+### Test pub/sub topics
 Its configured now so that the ROS2 topic prefix determines what to communicate over:
+
+Current list of topics tunnel is listening for:  
+Rover:  
+* /bs_hi/camera  
+* /bs_lo/telemetry
+Base Station:  
+* /rv_lo/controls
+
 
 <!-- |             | Send to Base Station | Send to Rover |
 |----------------|-----------------|---------------------|
