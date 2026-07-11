@@ -12,20 +12,20 @@
       send_port: 5011     # lo base port
   
   
-    # default_rate: 100.0
-    # default_zstd_level: 3
+    default_rate: 100.0
+    default_zstd_level: 3
     publish_stale_data: False
 
     #---------------------------------------------
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    # topics:
-    #   - "/telemetry"
+    topics:
+      - "/telemetry"
     subscribe_namespace: "/bs_lo"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
     # config incoming topics to publish (incoming)
     #---------------------------------------------
-    publish_namespace: "/bs_lo"    # add prefix of incoming publishing topics
+    publish_namespace: "/bslo"    # add prefix of incoming publishing topics

@@ -30,7 +30,7 @@ $ docker build -t bridge_test:v1 .
 ```
 
 ## 3. Create hi/lo docker nets
-**MODIFY PARENT NETWORK ADAPTERS**
+**MODIFY PARENT NETWORK ADAPTERS BASED ON YOUR INTERFACES**
 ```bash
 $ ./create_networks.sh
 ```
@@ -43,8 +43,23 @@ $ docker compose -f compose-base.yaml up -d
 $ docker compose -f compose-rover.yaml up -d
 ```
 
+## 5. Set up interface on base station to route exposed port?
+```bash
+# 1. Create a local ipvlan interface on your host link to <bridge_lo parent>
+sudo ip link add link <bridge_lo parent> name ipvlan_host type ipvlan mode l2
 
-## 5. Testing with topics
+# 2. Give your laptop host an IP address on that 10.0.1.x subnet
+sudo ip addr add 10.0.1.50/24 dev ipvlan_host
+
+# 3. Bring the interface up
+sudo ip link set dev ipvlan_host up
+
+# 4. Add a route telling your laptop to use this interface to talk to the container
+sudo ip route add 10.0.1.0/24 dev ipvlan_host
+```
+It might work differently than changing your host IP to be under the 10.0.1.x subet
+
+## Testing with topics
 Open an extra terminal in `bridge_rover` OR `bridge_base`
 ```bash
 $ docker exec -it <bridge_rover/bridge_base> bash
@@ -73,15 +88,30 @@ Connor update this
 | Send to Base Station | `/bs_lo/<name>` | `/bs_hi/<name>` |
 | Send to Rover | `/rv_lo/<name>` | `/rv_hi/<name>` |
 
-#### Rover side:
+### Rover side:
+**I THINK RIGHT NOW IT ONLY WORKS WITH THESE TOPICS:**
+```
+/bs_hi/camera
+/bs_lo/telemetry
+/rv_hi/selfie
+/rv_lo/controls
+```
+
+Testing
 ```bash
 ros2 topic pub -r 1 /bs_lo/telemetry std_msgs/msg/String "{data: 'Hello'}"
 ```
+Start USB Camera test:
+```bash
+ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:="/dev/video0"   -p pixel_format:="mjpeg2rgb"   -p image_encoding:="mono8"   -p image_width:=160   -p image_height:=120   -r image_raw:=/bs_hi/camera
+```
 
-#### Base side:
+### Base side:
 ```bash
 ros2 topic echo /rv_lo/telemetry
 ```
+
+<div height="100px"></div>
 
 # Analyze networks
 Show the network interfaces for the docker networks you created:

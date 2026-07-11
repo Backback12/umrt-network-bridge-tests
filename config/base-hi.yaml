@@ -12,20 +12,20 @@
       send_port: 5022     # hi rover port
   
   
-    # default_rate: 100.0
-    # default_zstd_level: 3
+    default_rate: 100.0
+    default_zstd_level: 3
     publish_stale_data: False
 
     #---------------------------------------------
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    # topics:
-    #   - "/telemetry"
+    topics:
+      - "/selfie"
     subscribe_namespace: "/rv_hi"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
     # config incoming topics to publish (incoming)
     #---------------------------------------------
-    publish_namespace: "/rv_hi"    # add prefix of incoming publishing topics
+    publish_namespace: "/rvhi"    # add prefix of incoming publishing topics

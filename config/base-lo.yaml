@@ -12,20 +12,20 @@
       send_port: 5012     # lo rover port
   
   
-    # default_rate: 100.0
-    # default_zstd_level: 3
+    default_rate: 100.0
+    default_zstd_level: 3
     publish_stale_data: False
 
     #---------------------------------------------
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    # topics:
-    #  - "/controls"
+    topics:
+     - "/controls"
     subscribe_namespace: "/rv_lo"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
     # config incoming topics to publish (incoming)
     #---------------------------------------------
-    publish_namespace: "/rv_lo"    # add prefix of incoming publishing topics
+    publish_namespace: "/rvlo"    # add prefix of incoming publishing topics

@@ -18,6 +18,7 @@ RUN set -e \
         ros-humble-foxglove-bridge \
         nodejs \
         ros-humble-network-bridge \
+        ros-humble-usb-cam \
     && rm -rf /var/lib/apt/lists/*
 
 RUN bash -c "set -e && npm install -g tileserver-gl-light"

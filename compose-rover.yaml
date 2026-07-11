@@ -6,6 +6,8 @@ services:
     tty: true
     environment:
       ROS_DOMAIN_ID: "2"
+    devices:
+      - "/dev/video0:/dev/video0" # expose USB cam testing
     volumes:
       - ./config/rover-hi.yaml:/opt/ros/humble/share/network_bridge/config/rover-hi.yaml:ro
       - ./config/rover-lo.yaml:/opt/ros/humble/share/network_bridge/config/rover-lo.yaml:ro

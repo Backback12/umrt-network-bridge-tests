@@ -4,6 +4,8 @@ services:
     container_name: bridge_base
     stdin_open: true
     tty: true
+    ports:
+      - "127.0.0.1:8765:8765"  # Expose default Foxglove UI Port
     environment:
       ROS_DOMAIN_ID: "1"
     volumes:
