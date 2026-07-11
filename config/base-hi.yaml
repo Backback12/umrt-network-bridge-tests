@@ -1,15 +1,15 @@
 # UMRT
-# Rover Low
+# Base Station High
 
 /**/*:
   ros__parameters:
     network_interface: "network_bridge::UdpInterface"
 
     UdpInterface:
-      local_address: "192.168.1.2"
-      receive_port: 5012  # lo rover port
-      remote_address: "192.168.1.1"
-      send_port: 5011     # lo base port
+      local_address: "10.0.2.1"
+      receive_port: 5021  # hi base port
+      remote_address: "10.0.2.2"
+      send_port: 5022     # hi rover port
   
   
     # default_rate: 100.0
@@ -20,12 +20,12 @@
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    topics:
-      - "/telemetry"
-    subscribe_namespace: "/bs_lo"  # prefix of local topics to subscribe to outgoing
+    # topics:
+    #   - "/telemetry"
+    # subscribe_namespace: "/rv_hi"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
     # config incoming topics to publish (incoming)
     #---------------------------------------------
-    publish_namespace: "/bs_lo"    # add prefix of incoming publishing topics
+    publish_namespace: "/rv_hi"    # add prefix of incoming publishing topics

@@ -2,18 +2,18 @@
 
 
 #### docker network `bridge_lo`  
-* subnet: `192.168.1.0/24`
-* gateway: `192.168.1.200`
+* subnet: `10.0.1.0/24`
+* gateway: `10.0.1.200`
 
 #### docker network `bridge_hi`
-* subnet: `192.168.2.0/24`
-* gateway: `192.168.2.200`
+* subnet: `10.0.2.0/24`
+* gateway: `10.0.2.200`
 
 
 | | Base Station | Rover |
 |--|--|--|
-| Low (900MHz) | 192.168.1.1 | 192.168.1.2 |
-| High (2.4GHz) | 192.168.2.1 | 192.168.2.2 |
+| Low (900MHz) | 10.0.1.1 | 10.0.1.2 |
+| High (2.4GHz) | 10.0.2.1 | 10.0.2.2 |
 
 
 
@@ -27,111 +27,22 @@
 $ docker build -t bridge_test:v1 .
 ```
 
-## 3. Create two docker nets
-Everntually assign these docker networks to specific ethernet adapters!! (update!!!)
-
+## 3. Create hi/lo docker nets
+**MODIFY PARENT NETWORK ADAPTERS**
 ```bash
-$ docker network create -d ipvlan --subnet 192.168.1.0/24 -o --gateway=192.168.1.200 bridge_lo
-$ docker network create -d ipvlan --subnet 192.168.2.0/24 -o --gateway=192.168.2.200 bridge_hi
+$ ./create_networks.sh
 ```
 
-## 4. Start Base Station Container 
-**START BASE STATION FIRST SO THAT IT TAKES THE CORRECT IPs**  
-Theres gotta be some way to manually configure the second IP I think.  
-
-Currently this command assigns the ip under bridge_hi to 192.168.2.1 and then joins bridge_lo with not specific. The IP for the low bridge is automatically assigned (update!!!)
-
-
-Create container `bridge_base`:
+## 4. Start Base Station or Rover Container 
 ```bash
-$ docker run -it --rm --name bridge_base --network=bridge_hi --ip=192.168.2.1 --network=bridge_lo bridge_test:v1
-
+$ docker compose -f compose-base.yaml up -d
 ```
-Source ROS2:
-```
-source ./ros_entrypoint.sh
-```
-
-<!-- Differentiate ROS DOMAIN ID between rover and base station (base station = 1)
 ```bash
-$ export ROS_DOMAIN_ID=1
-``` -->
-
-
-
-
-## 5. Start Rover Container
-<!-- ```bash
-$ docker run -it --rm --name bridge_rover --network=bridge_hi --ip=192.168.2.2 --network=bridge_lo --ip=192.168.1.2 bridge_test:v1
-```
-It didnt like it when I put two ip parameters, so I just put one and then it auto configured the second IP properly??? -->
-Create container `bridge_rover`:
-```bash
-$ docker run -it --rm --name bridge_rover --network=bridge_hi --ip=192.168.2.2 --network=bridge_lo bridge_test:v1
-```
-Source ROS2:
-```
-source ./ros_entrypoint.sh
-```
-
-<!-- Differentiate ROS DOMAIN ID between rover and base station (rover = 2)
-```bash
-$ export ROS_DOMAIN_ID=2
-``` -->
-
-
-
-
-## 6. Manually edit network_bridge configs (update!!!)
-This shouldn't need to be manually configured every time. Somehow find a way to fix this. Maybe make a custom `umrt_network_bridge` package built off network_bridge.
-
-The topics to send on each network are hard coded into all the yaml files. (update!!!)
-
-
-### Base Station Container:
-Copy files under this repo under `./base-2` into:
-```bash
-nano /opt/ros/humble/share/network_bridge/config/base-hi.yaml
-nano /opt/ros/humble/share/network_bridge/config/base-lo.yaml
-nano /opt/ros/humble/share/network_bridge/launch/udp.launch.py
-```
-
-### Rover Container:
-Copy files under this repo under `./rover-2` into:
-```bash
-nano /opt/ros/humble/share/network_bridge/config/rover-hi.yaml
-nano /opt/ros/humble/share/network_bridge/config/rover-lo.yaml
-nano /opt/ros/humble/share/network_bridge/launch/udp.launch.py
+$ docker compose -f compose-rover.yaml up -d
 ```
 
 
-## 7. Start Tunnels
-### Rover Container
-Differentiate ROS DOMAIN ID between rover and base station (rover = 2)
-```bash
-$ export ROS_DOMAIN_ID=2
-```
-Launch tunnel on rover side (need both to run properly)
-```bash
-$ ros2 launch network_bridge udp.launch.py
-```
-
-
-### Base Station Container
-Differentiate ROS DOMAIN ID between rover and base station (base station = 1)
-```bash
-$ export ROS_DOMAIN_ID=1
-```
-Launch tunnel on base station side
-```bash
-$ ros2 launch network_bridge udp.launch.py
-```
-
-
-
-
-
-## (8. Testing with topics)
+## 5. Testing with topics
 Open an extra terminal in `bridge_rover` OR `bridge_base`
 ```bash
 $ docker exec -it <bridge_rover/bridge_base> bash
@@ -201,3 +112,7 @@ bridge_lo is still connected and transmitting!!!!!!
 docker network disconnect bridge_lo bridge_rover
 ```
 bridge_hi is still connected and transmitting!!!!!!
+
+
+
+Not working when working with actual ethernet interfaces? Go check
