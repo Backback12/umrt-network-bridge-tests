@@ -20,8 +20,8 @@
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    topics:
-      - "/camera"
+    # topics:
+    #  - "/camera"
     subscribe_namespace: "/bs_hi"  # prefix of local topics to subscribe to outgoing
     
     

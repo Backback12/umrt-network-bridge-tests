@@ -1,5 +1,7 @@
 # Comms 25-26 network_bridge setup
 
+https://index.ros.org/p/network_bridge/
+https://github.com/brow1633/network_bridge
 
 #### docker network `bridge_lo`  
 * subnet: `10.0.1.0/24`

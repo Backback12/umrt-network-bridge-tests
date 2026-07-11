@@ -20,8 +20,8 @@
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    topics:
-      - "/controls"
+    # topics:
+    #  - "/controls"
     subscribe_namespace: "/rv_lo"  # prefix of local topics to subscribe to outgoing
     
     

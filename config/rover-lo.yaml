@@ -20,8 +20,8 @@
     # config local topics to subscribe (outgoing)
     #---------------------------------------------
 
-    topics:
-      - "/telemetry"
+    # topics:
+    #   - "/telemetry"
     subscribe_namespace: "/bs_lo"  # prefix of local topics to subscribe to outgoing
     
     

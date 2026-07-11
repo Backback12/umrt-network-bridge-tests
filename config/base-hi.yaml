@@ -22,7 +22,7 @@
 
     # topics:
     #   - "/telemetry"
-    # subscribe_namespace: "/rv_hi"  # prefix of local topics to subscribe to outgoing
+    subscribe_namespace: "/rv_hi"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
