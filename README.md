@@ -44,6 +44,7 @@ $ docker compose -f compose-rover.yaml up -d
 ```
 
 ## 5. Set up interface on base station to route exposed port?
+This is to enable connecting to the container from your host computer with Foxglove
 ```bash
 # 1. Create a local ipvlan interface on your host link to <bridge_lo parent>
 sudo ip link add link <bridge_lo parent> name ipvlan_host type ipvlan mode l2
@@ -111,7 +112,16 @@ ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:="/dev/video0"   
 ros2 topic echo /rv_lo/telemetry
 ```
 
-<div height="100px"></div>
+# Connect with Foxglove UI
+Make sure you enable a route first in step 5. 
+
+Start Foxglove and connect to:
+```
+ws://10.0.1.1:8765
+```
+
+
+
 
 # Analyze networks
 Show the network interfaces for the docker networks you created:
