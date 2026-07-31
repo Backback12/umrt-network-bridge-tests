@@ -5,7 +5,7 @@ services:
     stdin_open: true
     tty: true
     ports:
-      - "127.0.0.1:8765:8765"  # Expose default Foxglove UI Port
+      - "8765:8765"  # Expose default Foxglove UI Port
     environment:
       ROS_DOMAIN_ID: "1"
     volumes:
@@ -18,9 +18,9 @@ services:
       - source /opt/ros/humble/setup.bash && ros2 launch network_bridge base.launch.py
     networks:
       bridge_lo:
-        ipv4_address: 10.0.1.1
+        ipv4_address: 10.0.10.59
       bridge_hi:
-        ipv4_address: 10.0.2.1
+        ipv4_address: 10.0.20.59
 
 networks:
   bridge_lo:

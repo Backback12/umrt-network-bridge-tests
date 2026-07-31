@@ -6,9 +6,9 @@
     network_interface: "network_bridge::UdpInterface"
 
     UdpInterface:
-      local_address: "10.0.1.2"
+      local_address: "10.0.10.59"
       receive_port: 5012  # lo rover port
-      remote_address: "10.0.1.1"
+      remote_address: "10.0.10.57"
       send_port: 5011     # lo base port
   
   

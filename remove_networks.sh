@@ -1,60 +1,42 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
-# --- Configuration Variables ---
-LONG_PARENT_IF="enx606d3cbcec44"
-PARENT_IF="eth_main"
+# Parameter for parent interface (defaults to eth0 if not supplied)
+PARENT_IF="${1:-eth0}"
 
-VLAN_LO_ID="10"
-VLAN_HI_ID="20"
+echo "=================================================="
+echo " Cleaning up VLANs and Docker ipvlan Networks"
+echo " Parent Interface: ${PARENT_IF}"
+echo "=================================================="
 
-NET_LO="bridge_lo"
-NET_HI="bridge_hi"
-
-VLAN_LO_IF="${PARENT_IF}.${VLAN_LO_ID}"
-VLAN_HI_IF="${PARENT_IF}.${VLAN_HI_ID}"
-
-echo "Starting cleanup..."
-
-# --- Step 1: Remove Docker Networks ---
-echo "Removing Docker networks..."
-
-if docker network inspect "$NET_LO" >/dev/null 2>&1; then
-    docker network rm "$NET_LO"
-    echo "Removed Docker network: ${NET_LO}"
-else
-    echo "Docker network '${NET_LO}' not found. Skipping."
+# Check for root/sudo privileges
+if [ "$EUID" -ne 0 ]; then
+  echo "Error: Please run this script with sudo or as root."
+  exit 1
 fi
 
-if docker network inspect "$NET_HI" >/dev/null 2>&1; then
-    docker network rm "$NET_HI"
-    echo "Removed Docker network: ${NET_HI}"
-else
-    echo "Docker network '${NET_HI}' not found. Skipping."
+# 1. Remove Docker networks
+echo "[1/3] Removing Docker ipvlan networks..."
+docker network rm bridge_lo bridge_hi 2>/dev/null || echo "Docker networks already removed."
+
+# 2. Delete host VLAN interfaces
+echo "[2/3] Deleting host VLAN sub-interfaces..."
+if ip link show "${PARENT_IF}.10" >/dev/null 2>&1; then
+    sudo ip link delete dev "${PARENT_IF}.10"
+    echo "Removed ${PARENT_IF}.10"
 fi
 
-# --- Step 2: Delete VLAN Sub-Interfaces ---
-echo "Deleting VLAN sub-interfaces..."
-
-if ip link show "$VLAN_LO_IF" >/dev/null 2>&1; then
-    sudo ip link delete dev "$VLAN_LO_IF"
-    echo "Deleted interface: ${VLAN_LO_IF}"
+if ip link show "${PARENT_IF}.20" >/dev/null 2>&1; then
+    sudo ip link delete dev "${PARENT_IF}.20"
+    echo "Removed ${PARENT_IF}.20"
 fi
 
-if ip link show "$VLAN_HI_IF" >/dev/null 2>&1; then
-    sudo ip link delete dev "$VLAN_HI_IF"
-    echo "Deleted interface: ${VLAN_HI_IF}"
+# 3. Clean up host ipvlan shim if present
+if ip link show ipvlan_host >/dev/null 2>&1; then
+    sudo ip link delete dev ipvlan_host
+    echo "Removed host shim interface (ipvlan_host)"
 fi
 
-# --- Step 3: Revert Parent Interface Name ---
-echo "Checking parent interface..."
-
-if ip link show "$PARENT_IF" >/dev/null 2>&1; then
-    echo "Restoring original interface name '${LONG_PARENT_IF}'..."
-    sudo ip link set dev "$PARENT_IF" down
-    sudo ip link set dev "$PARENT_IF" name "$LONG_PARENT_IF"
-    sudo ip link set dev "$LONG_PARENT_IF" up
-    echo "Successfully renamed '${PARENT_IF}' back to '${LONG_PARENT_IF}'."
-fi
-
-echo "Cleanup complete!"
+echo "=================================================="
+echo " Cleanup complete! Network interfaces restored."
+echo "=================================================="
