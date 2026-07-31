@@ -117,44 +117,28 @@ Make sure you enable a route first in step 5.
 
 Start Foxglove and connect to:
 ```
-ws://10.0.1.1:8765
+ws://10.0.20.57:8765
 ```
 
 
 
+# MANAGED NETWORK SWITCH CONFIG
+## 802.1Q VLAN
+| VLAN_ID | Tagged Ports | Untagged Ports |
+|---------|--------------|----------------|
+| 1 (Default) | | 2,3,4,5,6,7,8 |
+| 10 (900_MHZ) | 6.7.8 | 1 |
+| 20 (2400_MHZ) | 6,7,8 | 2 |
+| 30 (LOCAL) | 3,4,5,6,7,8 | |
+| 99 (DEBUG) | 1,2,8 | 
 
-# Analyze networks
-Show the network interfaces for the docker networks you created:
-```
-docker network list | grep "bridge_"
-```
-Copy NETWORK ID, add "di-" in front of it. Or "br-"?  
-Just lok for similar id when you run `ip link show` on the host.
-
-
-<!-- 
-    e0896d43699f 
-    192b397e24b4
--->
-Analyze network:
-```
-sudo iftop -i di-<docker_network_id>
-```
-
-
-
-# Isolating Networks
-On host, test disconnects:
-```
-docker network disconnect bridge_hi bridge_rover
-```
-bridge_lo is still connected and transmitting!!!!!!
-
-```
-docker network disconnect bridge_lo bridge_rover
-```
-bridge_hi is still connected and transmitting!!!!!!
-
-
-
-Not working when working with actual ethernet interfaces? Go check
+## 802.1Q PVID Setting
+| Port | PVID |
+| 1 | 10 |
+| 2 | 20 |
+| 3 | 1 |
+| 4 | 1 |
+| 5 | 1 |
+| 6 | 1 |
+| 7 | 1 |
+| 8 | 1 |
