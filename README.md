@@ -84,6 +84,20 @@ ros2 topic pub -r 1 /bs_lo/telemetry std_msgs/msg/String "{data: 'Telemetry data
 ```bash
 ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:="/dev/video0"   -p pixel_format:="mjpeg2rgb"   -p image_encoding:="mono8"   -p image_width:=160   -p image_height:=120   -r image_raw:=/bs_hi/camera
 ```
+
+<!-- ```bash
+ros2 run usb_cam usb_cam_node_exe --ros-args \
+  -p video_device:="/dev/video0" \
+  -p pixel_format:="mjpeg2rgb" \
+  -p image_encoding:="mono8" \
+  -p image_width:=160 \
+  -p image_height:=120 \
+  -p qos_overrides./bs_hi/camera.publisher.reliability:=best_effort \
+  -p qos_overrides./bs_hi/camera.publisher.durability:=volatile \
+  -r image_raw:=/bs_hi/camera
+``` -->
+
+
 Or if no video:
 ```bash
 ros2 topic pub -r 1 /bs_hi/camera std_msgs/msg/String "{data: 'CAMERA STUFF'}"
