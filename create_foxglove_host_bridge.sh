@@ -2,7 +2,7 @@
 set -e
 
 # Parameter for target VLAN parent sub-interface (defaults to eth0.20)
-VLAN_IF="${1:-eth0.20}"
+VLAN_IF="${1:-eth_umrt.20}"
 SHIM_NAME="ipvlan_host"
 SHIM_IP="10.0.20.49/24"
 
