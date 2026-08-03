@@ -10,6 +10,8 @@ RUN set -e \
     && sudo apt update && sudo apt install -y \
         less \
         nano \
+        ffmpeg \
+        ros-humble-rmw-fastrtps-cpp \
         ros-humble-rviz2 \
         ros-humble-joy \
         ros-humble-joy-teleop \
@@ -17,8 +19,15 @@ RUN set -e \
         # ros-humble-umrt-arm-joystick-operator=2.1.0-0jammy \
         ros-humble-foxglove-bridge \
         nodejs \
+        ros-humble-foxglove-msgs \
+        ros-humble-foxglove-compressed-video-transport \
         ros-humble-network-bridge \
         ros-humble-usb-cam \
+        ros-humble-vision-msgs \
+        ros-humble-image-transport \
+        ros-humble-image-transport-plugins \
+        ros-humble-ffmpeg-image-transport \
+        ros-humble-ffmpeg-image-transport-msgs \
         iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
