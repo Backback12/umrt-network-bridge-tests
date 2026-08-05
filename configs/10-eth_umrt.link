@@ -1,0 +1,6 @@
+[Match]
+# Replace with your actual physical interface MAC address
+MACAddress=<aa:bb:cc:dd:ee:ff INSERT YOUR INTERFACE MAC>
+
+[Link]
+Name=eth_umrt

@@ -1,0 +1,8 @@
+[Match]
+Name=eth_umrt
+
+[Network]
+VLAN=eth_umrt.10
+VLAN=eth_umrt.20
+LinkLocalAddressing=no
+ConfigureWithoutCarrier=yes

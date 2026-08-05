@@ -157,3 +157,29 @@ To clean up, run scripts:
 | 6 | 1 |
 | 7 | 1 |
 | 8 | 1 |
+
+
+
+
+# No Network Bridge test setup
+### 1. Customize
+Edit `./configs/10-eth_umrt.link` with your interface MAC address with
+```bash
+iplink
+```
+And pls pick the right one.
+
+### 2. copy
+Copy all files under `./configs/` to your local `/etc/systemd/network/`. This also checks if the target dir exists.
+```bash
+[ -d /etc/systemd/network/ ] && cp ./configs/* /etc/systemd/network/
+```
+### 3. Enable
+Enable service to run on boot (and start)
+```bash
+sudo systemctl enable --now systemd-networkd
+```
+Or reset:
+```bash
+sudo systemctl restart systemd-networkd
+```

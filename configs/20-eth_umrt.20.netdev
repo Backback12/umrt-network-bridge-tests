@@ -1,0 +1,6 @@
+[NetDev]
+Name=eth_umrt.20
+Kind=vlan
+
+[VLAN]
+Id=20

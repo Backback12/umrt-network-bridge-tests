@@ -1,0 +1,6 @@
+[Match]
+Name=eth_umrt.10 eth_umrt.20
+
+[Network]
+LinkLocalAddressing=no
+ConfigureWithoutCarrier=yes
