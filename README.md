@@ -161,7 +161,7 @@ To clean up, run scripts:
 
 
 
-# No Network Bridge test setup
+# No Network Bridge test setup - One time setup
 ### 1. Customize
 Edit `./configs/10-eth_umrt.link` with your interface MAC address with
 ```bash
@@ -183,3 +183,16 @@ Or reset:
 ```bash
 sudo systemctl restart systemd-networkd
 ```
+
+
+# Run test containers
+### 1. Rover side?
+```bash
+./start_scripts/start_rover_containers.sh
+```
+### 2. Base station side?
+```bash
+./start_scripts/start_base_containers.sh
+```
+
+
