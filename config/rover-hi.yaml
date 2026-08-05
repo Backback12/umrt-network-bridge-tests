@@ -22,7 +22,11 @@
 
     topics:
       - "/camera"
-    subscribe_namespace: "/bs_hi"  # prefix of local topics to subscribe to outgoing
+      - "/bs_hi/camera"
+      - "/rover/poe/encoded_video"
+      - "/rover/poe/imu/data"
+      - "/rover/poe/stereo/*"
+    # subscribe_namespace: "/bs_hi"  # prefix of local topics to subscribe to outgoing
     
     
     #---------------------------------------------
