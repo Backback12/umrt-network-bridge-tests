@@ -184,6 +184,10 @@ Or reset:
 sudo systemctl restart systemd-networkd
 ```
 
+### Create docker networks
+```bash
+./start_scripts/create_docker_networks.sh
+```
 
 # Run test containers
 ### 1. Rover side?
