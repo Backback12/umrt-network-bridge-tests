@@ -1,0 +1,19 @@
+name: bridge_hi_test
+
+services:
+  bridge_rover:
+    image: bridge_test:v1
+    container_name: bridge_rover_lo
+    stdin_open: true
+    tty: true
+#    environment:
+#      ROS_DOMAIN_ID: "2"
+#    devices:
+#      - "/dev/video0:/dev/video0" # expose USB cam testing
+    networks:
+      bridge_lo:
+        ipv4_address: 10.0.10.59
+
+networks:
+  bridge_lo:
+    external: true

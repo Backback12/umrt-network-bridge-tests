@@ -21,7 +21,7 @@ RUN set -e \
         nodejs \
         ros-humble-foxglove-msgs \
         ros-humble-foxglove-compressed-video-transport \
-        ros-humble-network-bridge \
+        # ros-humble-network-bridge \
         ros-humble-usb-cam \
         ros-humble-vision-msgs \
         ros-humble-image-transport \

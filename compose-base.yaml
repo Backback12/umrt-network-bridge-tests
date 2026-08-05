@@ -6,16 +6,8 @@ services:
     tty: true
     ports:
       - "8765:8765"  # Expose default Foxglove UI Port
-    environment:
-      ROS_DOMAIN_ID: "1"
-    volumes:
-      - ./config/base-hi.yaml:/opt/ros/humble/share/network_bridge/config/base-hi.yaml:ro
-      - ./config/base-lo.yaml:/opt/ros/humble/share/network_bridge/config/base-lo.yaml:ro
-      - ./config/base.launch.py:/opt/ros/humble/share/network_bridge/launch/base.launch.py:ro
-    command:
-      - bash
-      - -lc
-      - source /opt/ros/humble/setup.bash && ros2 launch network_bridge base.launch.py
+#    environment:
+#      ROS_DOMAIN_ID: "1"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57
