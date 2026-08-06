@@ -6,8 +6,17 @@ services:
     container_name: bridge_rover_hi
     stdin_open: true
     tty: true
-#    environment:
-#      ROS_DOMAIN_ID: "2"
+    cap_add:
+      - NET_ADMIN
+    entrypoint: ["/usr/local/bin/network_policy.sh"]
+    command: ["bash"]
+    environment:
+      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-hi.xml"
+      ROUTE_POLICY: "drop-default"
+    volumes:
+      - ../container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro
+      - ../dds-configs:/dds-configs:ro
 #    devices:
 #      - "/dev/video0:/dev/video0" # expose USB cam testing
     networks:

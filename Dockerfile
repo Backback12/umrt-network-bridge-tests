@@ -10,6 +10,7 @@ RUN set -e \
     && sudo apt update && sudo apt install -y \
         less \
         nano \
+        iproute2 \
         ffmpeg \
         ros-humble-rmw-fastrtps-cpp \
         ros-humble-rviz2 \

@@ -4,10 +4,20 @@ services:
     container_name: bridge_base
     stdin_open: true
     tty: true
+    cap_add:
+      - NET_ADMIN
+    entrypoint: ["/usr/local/bin/network_policy.sh"]
+    command: ["bash"]
     ports:
       - "8765:8765"  # Expose default Foxglove UI Port
-#    environment:
-#      ROS_DOMAIN_ID: "1"
+    environment:
+      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-base.xml"
+      ROUTE_POLICY: "keep-only-gateway"
+      PREFERRED_DEFAULT_GATEWAY: "10.0.20.1"
+    volumes:
+      - ../container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro
+      - ../dds-configs:/dds-configs:ro
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57
