@@ -5,16 +5,31 @@ services:
     image: bridge_test:v1
     container_name: foxglove_bridge
     restart: unless-stopped
-    command: ros2 launch foxglove_bridge foxglove_bridge+launch.xml
+    cap_add:
+      - NET_ADMIN
+    entrypoint: ["/usr/local/bin/network_policy.sh"]
+    command:
+      - bash
+      - -lc
+      - source /opt/ros/humble/setup.bash && exec ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=0.0.0.0 port:=8765
     ports:
-      # Exposes container's 8765 to host's 8765
-      - "127.0.0.1:8765:8765" 
-#    environment:
-#      ROS_DOMAIN_ID: "1"
+      - "127.0.0.1:8765:8765"
+    environment:
+      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-foxglove.xml"
+      ROUTE_POLICY: "keep-only-gateway"
+      PREFERRED_DEFAULT_GATEWAY: "10.0.20.1"
+    volumes:
+      - ../container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro
+      - ../dds-configs:/dds-configs:ro
     networks:
+      bridge_lo:
+        ipv4_address: 10.0.10.49
       bridge_hi:
         ipv4_address: 10.0.20.49
 
 networks:
+  bridge_lo:
+    external: true
   bridge_hi:
     external: true

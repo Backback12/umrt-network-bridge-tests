@@ -1,4 +1,4 @@
-name: bridge_hi_test
+name: bridge_lo_test
 
 services:
   bridge_rover:

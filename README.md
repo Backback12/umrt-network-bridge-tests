@@ -6,12 +6,12 @@ https://github.com/brow1633/network_bridge
 #### docker network `bridge_lo` VLAN 10
 Connects to x.10 interface
 * subnet: `10.0.10.0/24`
-* gateway: `10.0.10.200`
+* gateway: `10.0.10.1`
 
 #### docker network `bridge_hi` VLAN 20
 Connects to x.20 interface
 * subnet: `10.0.20.0/24`
-* gateway: `10.0.20.200`
+* gateway: `10.0.20.1`
 
 
 | | Base Station | Rover |
@@ -31,21 +31,26 @@ docker build -t bridge_test:v1 .
 
 ## 3. Create VLAN 10/20 and lo/hi docker nets
 ```bash
-./create_networks.sh <your_parent_network_interface>
+./start_scripts/create_docker_networks.sh
 ```
 
 ## 4. Start Base Station or Rover Container 
 ```bash
-docker compose -f compose-base.yaml up -d
+./start_scripts/start_base_containers.sh
 ```
 ```bash
-docker compose -f compose-rover.yaml up -d
+./start_scripts/start_rover_containers.sh
 ```
 
+## Foxglove container layout
+The base-side Foxglove bridge now runs in its own container, but that container is attached to both `bridge_lo` and `bridge_hi`. This lets a single Foxglove bridge discover topics from both radio paths, and Docker publishes the host-side connection at `ws://localhost:8765`.
+
+Important: the Fast DDS whitelist only limits DDS traffic to the listed interfaces. It does not firewall the Foxglove WebSocket listener inside the container. Because Foxglove binds `0.0.0.0` in the container, peers that can already reach the container IPs may still be able to connect directly to `10.0.10.49:8765` or `10.0.20.49:8765` unless you add an explicit firewall or proxy rule.
+
 ## Testing with topics
-Open an extra terminal in `bridge_rover` OR `bridge_base`
+Open an extra terminal in `bridge_base`, `bridge_rover_hi`, or `bridge_rover_lo`
 ```bash
-$ docker exec -it <bridge_rover/bridge_base> bash
+$ docker exec -it <bridge_base/bridge_rover_hi/bridge_rover_lo> bash
 ```
 Source ROS2:
 ```bash
@@ -115,24 +120,26 @@ ros2 topic echo /rv_lo/telemetry
 ```
 
 # Connect with Foxglove UI on Base Station
-This is to enable connecting to the container from your host computer with Foxglove
+Start the base-side containers:
 ```bash
-./create_foxglove_host_bridge.sh <.20 interface name>
+./start_scripts/start_base_containers.sh
 ```
-It might work differently than changing your host IP to be under the 10.0.1.x subet?
 
-Start Foxglove and open the connection to:
+Then open Foxglove on the host computer and connect to:
 ```
-ws://10.0.20.57:8765
+ws://localhost:8765
 ```
 
 
 
 # Cleanup
-To clean up, run scripts:
+To clean up, stop the containers and remove the Docker networks:
 ```bash
-./remove_foxglove_bridge_host.sh
-./remove_networks.sh <your_parent_network_interface>
+docker compose -f compose/compose-foxglove-bridge.yaml down
+docker compose -f compose/compose-base.yaml down
+docker compose -f compose/compose-rover-hi.yaml down
+docker compose -f compose/compose-rover-lo.yaml down
+docker network rm bridge_lo bridge_hi
 ```
 
 
@@ -212,5 +219,3 @@ sudo systemctl start docker
 ```bash
 ./start_scripts/start_base_containers.sh
 ```
-
-

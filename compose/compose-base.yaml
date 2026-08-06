@@ -8,8 +8,6 @@ services:
       - NET_ADMIN
     entrypoint: ["/usr/local/bin/network_policy.sh"]
     command: ["bash"]
-    ports:
-      - "8765:8765"  # Expose default Foxglove UI Port
     environment:
       RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
       FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-base.xml"

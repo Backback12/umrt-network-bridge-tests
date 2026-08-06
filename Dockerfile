@@ -7,7 +7,7 @@ FROM ros:humble-ros-base
 
 RUN set -e \
     && curl -vL https://deb.nodesource.com/setup_20.x | bash - \
-    && sudo apt update && sudo apt install -y \
+    && apt update && apt install -y \
         less \
         nano \
         iproute2 \
@@ -34,4 +34,4 @@ RUN set -e \
 
 RUN bash -c "set -e && npm install -g tileserver-gl-light"
 
-RUN sudo rm -f /etc/apt/sources.list.d/umrt_source.list
+RUN rm -f /etc/apt/sources.list.d/umrt_source.list
