@@ -17,7 +17,7 @@ Connects to x.20 interface
 | | Base Station | Rover |
 |--|--|--|
 | Low (900MHz) VLAN 10 | 10.0.10.57 | 10.0.10.59 |
-| High (2.4GHz) VLAN 20 | 10.0.20.57 | 10.0.10.59 |
+| High (2.4GHz) VLAN 20 | 10.0.20.57 | 10.0.20.59 |
 
 
 
@@ -183,10 +183,24 @@ Or reset:
 ```bash
 sudo systemctl restart systemd-networkd
 ```
+OR REBOOT:
+```bash
+reboot
+```
 
 ### Create docker networks
 ```bash
 ./start_scripts/create_docker_networks.sh
+```
+
+If you have an issue saying "network di-XXXXXXXXXXXX is already using parent interface eth_umrt.10":
+```bash
+sudo systemctl stop docker.socket
+sudo systemctl stop docker
+# Move for backup but really delete
+sudo mv /var/lib/docker/network/files/local-kv.db ~/local-kv.db.backup
+sudo systemctl start docker
+
 ```
 
 # Run test containers

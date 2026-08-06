@@ -5,7 +5,7 @@ services:
     image: bridge_test:v1
     container_name: foxglove_bridge
     restart: unless-stopped
-    command: ros2 launch foxglove_bridge foxglove_bridge.launch.xml port:=8765
+    command: ros2 launch foxglove_bridge foxglove_bridge+launch.xml
     ports:
       # Exposes container's 8765 to host's 8765
       - "127.0.0.1:8765:8765" 
