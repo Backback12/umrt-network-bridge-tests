@@ -1,31 +1,58 @@
+name: bridge_base_stack
+
+x-ros-environment: &ros_environment
+  ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
+  ROS_LOCALHOST_ONLY: "0"
+  RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+  ROUTE_POLICY: "drop-default"
+
+x-ros-container: &ros_container
+  image: "${BRIDGE_TEST_IMAGE:-bridge_test:v1}"
+  entrypoint: ["/usr/local/bin/network_policy.sh"]
+  cap_add:
+    - NET_ADMIN
+
 services:
   bridge_base:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    image: bridge_test:v1
+    <<: *ros_container
     container_name: bridge_base
     stdin_open: true
     tty: true
-    cap_add:
-      - NET_ADMIN
-    entrypoint: ["/usr/local/bin/network_policy.sh"]
-    command: ["bash"]
+    command: ["sleep", "infinity"]
     environment:
-      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      <<: *ros_environment
       FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-base.xml"
-      ROUTE_POLICY: "keep-only-gateway"
-      PREFERRED_DEFAULT_GATEWAY: "10.0.20.1"
-    volumes:
-      - ../container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro
-      - ../dds-configs:/dds-configs:ro
+      FASTRTPS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-base.xml"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57
       bridge_hi:
         ipv4_address: 10.0.20.57
 
+  foxglove_bridge:
+    <<: *ros_container
+    container_name: foxglove_bridge
+    restart: unless-stopped
+    command:
+      - bash
+      - -lc
+      - source /opt/ros/humble/setup.bash && exec ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=0.0.0.0 port:=8765
+    environment:
+      <<: *ros_environment
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-foxglove.xml"
+      FASTRTPS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-foxglove.xml"
+    ports:
+      - "127.0.0.1:8765:8765"
+    networks:
+      bridge_lo:
+        ipv4_address: 10.0.10.49
+      bridge_hi:
+        ipv4_address: 10.0.20.49
+      foxglove_local: {}
+
 networks:
+  foxglove_local:
+    driver: bridge
   bridge_lo:
     external: true
   bridge_hi:

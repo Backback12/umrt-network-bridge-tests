@@ -1,37 +1,33 @@
 FROM ros:humble-ros-base
 
-# RUN echo "deb [arch=amd64,arm64 signed-by=/etc/apt/keyrings/umrt.asc] https://raw.githubusercontent.com/UMRoboticsTeam/umrt-apt-repo/main/ humble main" > /etc/apt/sources.list.d/umrt_source.list
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# RUN --mount=type=secret,id=apt_auth_conf,target=/etc/apt/auth.conf.d/umrt.conf \
-    # --mount=type=secret,id=apt_pubkey,target=/etc/apt/keyrings/umrt.asc,mode=0644 \
-
-RUN set -e \
-    && curl -vL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt update && apt install -y \
+RUN set -eux \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash-completion \
+        ffmpeg \
+        iproute2 \
+        iputils-ping \
         less \
         nano \
-        iproute2 \
-        ffmpeg \
-        ros-humble-rmw-fastrtps-cpp \
-        ros-humble-rviz2 \
-        ros-humble-joy \
-        ros-humble-joy-teleop \
-        ros-humble-teleop-twist-joy \
-        # ros-humble-umrt-arm-joystick-operator=2.1.0-0jammy \
-        ros-humble-foxglove-bridge \
-        nodejs \
-        ros-humble-foxglove-msgs \
-        ros-humble-foxglove-compressed-video-transport \
-        # ros-humble-network-bridge \
-        ros-humble-usb-cam \
-        ros-humble-vision-msgs \
-        ros-humble-image-transport \
-        ros-humble-image-transport-plugins \
         ros-humble-ffmpeg-image-transport \
         ros-humble-ffmpeg-image-transport-msgs \
-        iputils-ping \
+        ros-humble-foxglove-bridge \
+        ros-humble-foxglove-compressed-video-transport \
+        ros-humble-foxglove-msgs \
+        ros-humble-image-transport \
+        ros-humble-image-transport-plugins \
+        ros-humble-joy \
+        ros-humble-joy-teleop \
+        ros-humble-rmw-fastrtps-cpp \
+        ros-humble-teleop-twist-joy \
+        ros-humble-usb-cam \
+        ros-humble-vision-msgs \
     && rm -rf /var/lib/apt/lists/*
 
-RUN bash -c "set -e && npm install -g tileserver-gl-light"
+COPY container_scripts/network_policy.sh /usr/local/bin/network_policy.sh
+COPY dds-configs /dds-configs
 
-RUN rm -f /etc/apt/sources.list.d/umrt_source.list
+RUN chmod +x /usr/local/bin/network_policy.sh \
+    && echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc

@@ -1,161 +1,182 @@
-# Comms 25-26 network_bridge setup tests
+# ROS2 VLAN bridge test
 
-https://index.ros.org/p/network_bridge/
-https://github.com/brow1633/network_bridge
+This project creates one ROS2 base-side stack and one rover-side stack across two isolated radio VLANs.
 
-#### docker network `bridge_lo` VLAN 10
-Connects to x.10 interface
-* subnet: `10.0.10.0/24`
-* gateway: `10.0.10.1`
+The important rule is simple: rover high and rover low do not share a Docker network. Only the base-side containers are attached to both VLANs.
 
-#### docker network `bridge_hi` VLAN 20
-Connects to x.20 interface
-* subnet: `10.0.20.0/24`
-* gateway: `10.0.20.1`
+## Topology
 
+There is no gateway/router device in this setup. All communication is directly connected on the two VLAN subnets.
 
-| | Base Station | Rover |
-|--|--|--|
-| Low (900MHz) VLAN 10 | 10.0.10.57 | 10.0.10.59 |
-| High (2.4GHz) VLAN 20 | 10.0.20.57 | 10.0.20.59 |
+| Side | Container | Network | IP |
+| --- | --- | --- | --- |
+| Base | `bridge_base` | VLAN 10 / `bridge_lo` | `10.0.10.57` |
+| Base | `bridge_base` | VLAN 20 / `bridge_hi` | `10.0.20.57` |
+| Foxglove | `foxglove_bridge` | VLAN 10 / `bridge_lo` | `10.0.10.49` |
+| Foxglove | `foxglove_bridge` | VLAN 20 / `bridge_hi` | `10.0.20.49` |
+| Rover low | `bridge_rover_lo` | VLAN 10 / `bridge_lo` | `10.0.10.59` |
+| Rover high | `bridge_rover_hi` | VLAN 20 / `bridge_hi` | `10.0.20.59` |
 
+`foxglove_bridge` also joins a normal Docker bridge network named by Compose. That local bridge is only for the host-side Foxglove WebSocket publish path. `bridge_base` is only attached to the two radio VLAN networks, and the rover containers are each attached to only one radio VLAN.
 
+## What was wrong before
 
-# Instructions
+- The Docker ipvlan networks were configured with gateway IPs (`10.0.10.1`, `10.0.20.1`) even though this topology has no gateway device. That gave containers useless default routes and made the dual-homed base/Foxglove path fragile.
+- The base and Foxglove containers had two Docker default routes, then a route script tried to keep only one nonexistent gateway. Direct VLAN routes are the only routes this setup needs.
+- Foxglove was attached only to ipvlan networks while also trying to publish `127.0.0.1:8765`. A normal Docker bridge attachment is the reliable way to make the WebSocket available on host localhost.
+- The compose files and start scripts rebuilt images implicitly with `--build`. The scripts now build the image first, then start containers from that image.
+- The old Fast DDS XML files were trying to compensate for a network design problem. This version keeps only small Fast DDS profiles that map directly to the container IPs, because Fast DDS otherwise used the first base interface and did not carry high-side topic data.
+- The old Docker network script had text before the shebang and a typo in the printed interface name. It also removed networks every time, which is painful when containers are attached.
+- `configs/10-eth_umrt.link` still contains a placeholder MAC address. Replace it before installing the host network config.
 
-## 1. Build image 
-Create image called bridge_test:v1
+Seeing a topic name from the other rover side but being unable to echo it can still happen with DDS discovery and multi-homed participants. That is not the same as the two rover containers having direct network reachability.
+
+## DDS policy
+
+The Docker network layout is the real isolation boundary. The Fast DDS XML files only make DDS interface selection deterministic:
+
+- `fastdds-base.xml` allows `10.0.10.57` and `10.0.20.57`.
+- `fastdds-foxglove.xml` allows `10.0.10.49` and `10.0.20.49`, but not the local Docker bridge address used for the host WebSocket.
+- `fastdds-rover-lo.xml` allows only `10.0.10.59`.
+- `fastdds-rover-hi.xml` allows only `10.0.20.59`.
+
+I tried the fully default Fast DDS path first. The low VLAN carried real ROS sample data, but the high VLAN only passed ICMP and did not echo ROS samples from base. These minimal profiles fix that without using ROS topic bridges or gateway routing.
+
+## Host parent interfaces
+
+Edit the MAC address in:
+
 ```bash
-docker build -t bridge_test:v1 .
+configs/10-eth_umrt.link
 ```
 
-## 3. Create VLAN 10/20 and lo/hi docker nets
+Then install the systemd-networkd parent/VLAN config:
+
+```bash
+sudo ./start_scripts/setup_parent_interfaces.sh
+```
+
+Expected host links:
+
+```text
+eth_umrt
+eth_umrt.10
+eth_umrt.20
+```
+
+## Create Docker radio networks
+
+Create the gateway-less ipvlan networks:
+
 ```bash
 ./start_scripts/create_docker_networks.sh
 ```
 
-## 4. Start Base Station or Rover Container 
+If stale networks already exist with the old gateway config, recreate them:
+
+```bash
+./start_scripts/create_docker_networks.sh --recreate
+```
+
+Expected Docker networks:
+
+| Docker network | Driver | Parent | Subnet | Gateway |
+| --- | --- | --- | --- | --- |
+| `bridge_lo` | `ipvlan` | `eth_umrt.10` | `10.0.10.0/24` | none |
+| `bridge_hi` | `ipvlan` | `eth_umrt.20` | `10.0.20.0/24` | none |
+
+## Start containers
+
+Start the base side:
+
 ```bash
 ./start_scripts/start_base_containers.sh
 ```
+
+Start the rover side:
+
 ```bash
 ./start_scripts/start_rover_containers.sh
 ```
 
-## Foxglove container layout
-The base-side Foxglove bridge now runs in its own container, but that container is attached to both `bridge_lo` and `bridge_hi`. This lets a single Foxglove bridge discover topics from both radio paths, and Docker publishes the host-side connection at `ws://localhost:8765`.
+Both scripts build `bridge_test:v1` before starting their Compose stack. Override the image tag with `BRIDGE_TEST_IMAGE` if needed.
 
-Important: the Fast DDS whitelist only limits DDS traffic to the listed interfaces. It does not firewall the Foxglove WebSocket listener inside the container. Because Foxglove binds `0.0.0.0` in the container, peers that can already reach the container IPs may still be able to connect directly to `10.0.10.49:8765` or `10.0.20.49:8765` unless you add an explicit firewall or proxy rule.
+## Foxglove
 
-## Testing with topics
-Open an extra terminal in `bridge_base`, `bridge_rover_hi`, or `bridge_rover_lo`
-```bash
-$ docker exec -it <bridge_base/bridge_rover_hi/bridge_rover_lo> bash
-```
-Source ROS2:
-```bash
-source /opt/ros/humble/setup.bash
-```
+After the base side is running, open Foxglove on the host and connect to:
 
-### Test topics over interfaces
-Its configured now so that the ROS2 topic prefix determines what to communicate over:
-
-<!-- |             | Send to Base Station | Send to Rover |
-|----------------|-----------------|---------------------|
-| Use Low Bridge | `/bs_lo/<name>` | `/rv_lo/<name>` |
-| Use High Bridge| `/bs_hi/<name>` | `/rv_hi/<name>` | -->
-
-Connor update this
-
-|       | Use Low Bridge | Use High Bridge |
-|----------------|-----------------|------------|
-| Send to Base Station | `/bs_lo/<name>` | `/bs_hi/<name>` |
-| Send to Rover | `/rv_lo/<name>` | `/rv_hi/<name>` |
-
-**I THINK RIGHT NOW IT ONLY WORKS WITH THESE TOPICS:**
-```
-/bs_hi/camera
-/bs_lo/telemetry
-/rv_hi/selfie
-/rv_lo/controls
-```
-
-### Rover side:
-#### Start send string telemetry
-```bash
-ros2 topic pub -r 1 /bs_lo/telemetry std_msgs/msg/String "{data: 'Telemetry data'}"
-```
-#### Start USB Camera test:
-```bash
-ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:="/dev/video0"   -p pixel_format:="mjpeg2rgb"   -p image_encoding:="mono8"   -p image_width:=160   -p image_height:=120   -r image_raw:=/bs_hi/camera
-```
-
-<!-- ```bash
-ros2 run usb_cam usb_cam_node_exe --ros-args \
-  -p video_device:="/dev/video0" \
-  -p pixel_format:="mjpeg2rgb" \
-  -p image_encoding:="mono8" \
-  -p image_width:=160 \
-  -p image_height:=120 \
-  -p qos_overrides./bs_hi/camera.publisher.reliability:=best_effort \
-  -p qos_overrides./bs_hi/camera.publisher.durability:=volatile \
-  -r image_raw:=/bs_hi/camera
-``` -->
-
-
-Or if no video:
-```bash
-ros2 topic pub -r 1 /bs_hi/camera std_msgs/msg/String "{data: 'CAMERA STUFF'}"
-```
-
-### Base side:
-#### Test Publishing
-```bash
-ros2 topic pub -r 1 /rv_hi/selfie std_msgs/msg/String "{data: 'selfie hi data'}"
-ros2 topic pub -r 1 /rv_lo/controls std_msgs/msg/String "{data: 'controls from base station'}"
-```
-#### Echo rover telemetry
-```bash
-ros2 topic echo /bs_lo/telemetry
-```
-
-# Connect with Foxglove UI on Base Station
-Start the base-side containers:
-```bash
-./start_scripts/start_base_containers.sh
-```
-
-Then open Foxglove on the host computer and connect to:
-```
+```text
 ws://localhost:8765
 ```
 
+## Quick checks
 
+Check addresses and routes:
 
-# Cleanup
-To clean up, stop the containers and remove the Docker networks:
 ```bash
-docker compose -f compose/compose-foxglove-bridge.yaml down
+docker exec bridge_base ip -br addr
+docker exec bridge_base ip route
+docker exec bridge_rover_lo ip route
+docker exec bridge_rover_hi ip route
+```
+
+The containers should have direct routes for their attached subnets and no default route.
+
+Check network isolation:
+
+```bash
+docker exec bridge_rover_lo ping -c 2 10.0.10.57
+docker exec bridge_rover_hi ping -c 2 10.0.20.57
+docker exec bridge_rover_lo ping -c 2 10.0.20.59
+```
+
+The first two should work. The last one should fail because rover low and rover high are not connected to the same network.
+
+Check ROS topics:
+
+```bash
+docker exec -it bridge_rover_lo bash
+ros2 topic pub -r 1 /bs_lo/telemetry std_msgs/msg/String "{data: 'Telemetry data'}"
+```
+
+```bash
+docker exec -it bridge_rover_hi bash
+ros2 topic pub -r 1 /bs_hi/camera std_msgs/msg/String "{data: 'CAMERA STUFF'}"
+```
+
+```bash
+docker exec -it bridge_base bash
+ros2 topic echo /bs_lo/telemetry
+ros2 topic echo /bs_hi/camera
+```
+
+Base-to-rover examples:
+
+```bash
+docker exec -it bridge_base bash
+ros2 topic pub -r 1 /rv_lo/controls std_msgs/msg/String "{data: 'controls from base station'}"
+ros2 topic pub -r 1 /rv_hi/selfie std_msgs/msg/String "{data: 'selfie hi data'}"
+```
+
+## Cleanup
+
+```bash
 docker compose -f compose/compose-base.yaml down
-docker compose -f compose/compose-rover-hi.yaml down
-docker compose -f compose/compose-rover-lo.yaml down
+docker compose -f compose/compose-rover.yaml down
 docker network rm bridge_lo bridge_hi
 ```
 
+## Managed switch reminder
 
-# MANAGED NETWORK SWITCH CONFIG
-## 802.1Q VLAN
-| VLAN_ID | Tagged Ports | Untagged Ports |
-|---------|--------------|----------------|
-| 1 (Default) | | 2,3,4,5,6,7,8 |
-| 10 (900_MHZ) | 6.7.8 | 1 |
-| 20 (2400_MHZ) | 6,7,8 | 2 |
-| 30 (LOCAL) | 3,4,5,6,7,8 | |
-| 99 (DEBUG) | 1,2,8 | 
+| VLAN ID | Purpose | Tagged ports | Untagged ports |
+| --- | --- | --- | --- |
+| 10 | 900 MHz | 6, 7, 8 | 1 |
+| 20 | 2.4 GHz | 6, 7, 8 | 2 |
+| 30 | Local | 3, 4, 5, 6, 7, 8 | |
+| 99 | Debug | 1, 2, 8 | |
 
-## 802.1Q PVID Setting
 | Port | PVID |
-|------|------|
+| --- | --- |
 | 1 | 10 |
 | 2 | 20 |
 | 3 | 1 |
@@ -164,58 +185,3 @@ docker network rm bridge_lo bridge_hi
 | 6 | 1 |
 | 7 | 1 |
 | 8 | 1 |
-
-
-
-
-# No Network Bridge test setup - One time setup
-### 1. Customize
-Edit `./configs/10-eth_umrt.link` with your interface MAC address with
-```bash
-iplink
-```
-And pls pick the right one.
-
-### 2. copy
-Copy all files under `./configs/` to your local `/etc/systemd/network/`. This also checks if the target dir exists.
-```bash
-[ -d /etc/systemd/network/ ] && cp ./configs/* /etc/systemd/network/
-```
-### 3. Enable
-Enable service to run on boot (and start)
-```bash
-sudo systemctl enable --now systemd-networkd
-```
-Or reset:
-```bash
-sudo systemctl restart systemd-networkd
-```
-OR REBOOT:
-```bash
-reboot
-```
-
-### Create docker networks
-```bash
-./start_scripts/create_docker_networks.sh
-```
-
-If you have an issue saying "network di-XXXXXXXXXXXX is already using parent interface eth_umrt.10":
-```bash
-sudo systemctl stop docker.socket
-sudo systemctl stop docker
-# Move for backup but really delete
-sudo mv /var/lib/docker/network/files/local-kv.db ~/local-kv.db.backup
-sudo systemctl start docker
-
-```
-
-# Run test containers
-### 1. Rover side?
-```bash
-./start_scripts/start_rover_containers.sh
-```
-### 2. Base station side?
-```bash
-./start_scripts/start_base_containers.sh
-```

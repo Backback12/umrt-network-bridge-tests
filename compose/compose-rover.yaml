@@ -1,0 +1,45 @@
+name: bridge_rover_stack
+
+x-ros-environment: &ros_environment
+  ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
+  ROS_LOCALHOST_ONLY: "0"
+  RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+  ROUTE_POLICY: "drop-default"
+
+x-rover-container: &rover_container
+  image: "${BRIDGE_TEST_IMAGE:-bridge_test:v1}"
+  entrypoint: ["/usr/local/bin/network_policy.sh"]
+  cap_add:
+    - NET_ADMIN
+  stdin_open: true
+  tty: true
+  command: ["sleep", "infinity"]
+
+services:
+  bridge_rover_hi:
+    <<: *rover_container
+    container_name: bridge_rover_hi
+    environment:
+      <<: *ros_environment
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-hi.xml"
+      FASTRTPS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-hi.xml"
+    networks:
+      bridge_hi:
+        ipv4_address: 10.0.20.59
+
+  bridge_rover_lo:
+    <<: *rover_container
+    container_name: bridge_rover_lo
+    environment:
+      <<: *ros_environment
+      FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-lo.xml"
+      FASTRTPS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-lo.xml"
+    networks:
+      bridge_lo:
+        ipv4_address: 10.0.10.59
+
+networks:
+  bridge_lo:
+    external: true
+  bridge_hi:
+    external: true
