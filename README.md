@@ -109,6 +109,12 @@ After the base side is running, open Foxglove on the host and connect to:
 ws://localhost:8765
 ```
 
+The compose file publishes Foxglove as `0.0.0.0:8765:8765` by default, so `ws://<host-ip>:8765` also works. To bind only to loopback:
+
+```bash
+FOXGLOVE_HOST_BIND=127.0.0.1 ./start_scripts/start_base_containers.sh
+```
+
 ## Quick checks
 
 Check addresses and routes:
@@ -157,6 +163,12 @@ docker exec -it bridge_base bash
 ros2 topic pub -r 1 /rv_lo/controls std_msgs/msg/String "{data: 'controls from base station'}"
 ros2 topic pub -r 1 /rv_hi/selfie std_msgs/msg/String "{data: 'selfie hi data'}"
 ```
+
+## Custom containers
+
+See [docs/custom-container.md](docs/custom-container.md) for the minimal compose/Dockerfile pieces another project needs to join either `bridge_hi` or `bridge_lo`.
+
+Short version: copy `network_policy.sh`, copy the relevant DDS profile, set `RMW_IMPLEMENTATION=rmw_fastrtps_cpp`, set both Fast DDS profile env vars, use `ROUTE_POLICY=drop-default`, add `NET_ADMIN`, and attach to exactly one external radio network with a unique static IP.
 
 ## Cleanup
 

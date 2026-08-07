@@ -42,7 +42,7 @@ services:
       FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-foxglove.xml"
       FASTRTPS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-foxglove.xml"
     ports:
-      - "127.0.0.1:8765:8765"
+      - "${FOXGLOVE_HOST_BIND:-0.0.0.0}:8765:8765"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.49

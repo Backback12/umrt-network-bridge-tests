@@ -4,7 +4,7 @@
     <transport_descriptor>
       <transport_id>udp_vlan_foxglove</transport_id>
       <type>UDPv4</type>
-      <maxInitialPeersRange>4</maxInitialPeersRange>
+      <maxInitialPeersRange>16</maxInitialPeersRange>
       <interfaceWhiteList>
         <address>127.0.0.1</address>
         <address>10.0.10.49</address>
@@ -21,6 +21,21 @@
       </userTransports>
       <builtin>
         <initialPeersList>
+          <locator>
+            <udpv4>
+              <address>127.0.0.1</address>
+            </udpv4>
+          </locator>
+          <locator>
+            <udpv4>
+              <address>10.0.10.49</address>
+            </udpv4>
+          </locator>
+          <locator>
+            <udpv4>
+              <address>10.0.20.49</address>
+            </udpv4>
+          </locator>
           <locator>
             <udpv4>
               <address>10.0.10.57</address>
