@@ -53,6 +53,9 @@ services:
 networks:
   foxglove_local:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
   bridge_lo:
     external: true
   bridge_hi:

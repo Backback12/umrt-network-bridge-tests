@@ -36,6 +36,12 @@ delete_default_route() {
 drop_default_routes() {
   local route_line=""
 
+  local main_gw
+  main_gw="$(ip route show default 2>/dev/null | awk '/default/ {print $3}' | head -n 1)"
+  if [[ -n "${main_gw}" ]]; then
+    ip route add 172.28.0.0/16 via "${main_gw}" 2>/dev/null || true
+  fi
+
   while IFS= read -r route_line; do
     [[ -n "${route_line}" ]] || continue
     delete_default_route "${route_line}"
