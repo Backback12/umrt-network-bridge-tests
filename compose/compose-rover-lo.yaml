@@ -2,6 +2,9 @@ name: bridge_lo_test
 
 services:
   bridge_rover:
+    build:
+      context: ..
+      dockerfile: Dockerfile
     image: bridge_test:v1
     container_name: bridge_rover_lo
     stdin_open: true
@@ -13,7 +16,7 @@ services:
     environment:
       RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
       FASTDDS_DEFAULT_PROFILES_FILE: "/dds-configs/fastdds-rover-lo.xml"
-      ROUTE_POLICY: "drop-default"
+      ROUTE_POLICY: "preserve"
     volumes:
       - ../container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro
       - ../dds-configs:/dds-configs:ro

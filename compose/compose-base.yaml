@@ -1,5 +1,8 @@
 services:
   bridge_base:
+    build:
+      context: ..
+      dockerfile: Dockerfile
     image: bridge_test:v1
     container_name: bridge_base
     stdin_open: true

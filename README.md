@@ -112,11 +112,11 @@ ros2 topic pub -r 1 /bs_hi/camera std_msgs/msg/String "{data: 'CAMERA STUFF'}"
 #### Test Publishing
 ```bash
 ros2 topic pub -r 1 /rv_hi/selfie std_msgs/msg/String "{data: 'selfie hi data'}"
-ros2 topic pub -r 1 /bs_lo/controls std_msgs/msg/String "{data: 'controls from base station'}"
+ros2 topic pub -r 1 /rv_lo/controls std_msgs/msg/String "{data: 'controls from base station'}"
 ```
 #### Echo rover telemetry
 ```bash
-ros2 topic echo /rv_lo/telemetry
+ros2 topic echo /bs_lo/telemetry
 ```
 
 # Connect with Foxglove UI on Base Station

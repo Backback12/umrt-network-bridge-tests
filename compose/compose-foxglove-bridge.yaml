@@ -2,6 +2,9 @@ name: foxglove_bridge_stack
 
 services:
   foxglove_bridge:
+    build:
+      context: ..
+      dockerfile: Dockerfile
     image: bridge_test:v1
     container_name: foxglove_bridge
     restart: unless-stopped
