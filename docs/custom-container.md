@@ -20,7 +20,25 @@ COPY dds-configs /dds-configs
 RUN chmod +x /usr/local/bin/network_policy.sh
 ```
 
-## Compose: high radio
+## Compose snippets
+
+Common service pieces:
+
+```yaml
+entrypoint: ["/usr/local/bin/network_policy.sh"]
+command: ["/bin/bash"]
+cap_add:
+  - NET_ADMIN
+stdin_open: true
+tty: true
+environment:
+  ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
+  ROS_LOCALHOST_ONLY: "0"
+  RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+  ROUTE_POLICY: "drop-default"
+```
+
+High radio:
 
 Pick a unique IP in `10.0.20.0/24`.
 
@@ -29,11 +47,13 @@ services:
   my_rover_hi_app:
     image: my_rover_app:latest
     entrypoint: ["/usr/local/bin/network_policy.sh"]
-    command: ["bash"]
+    command: ["/bin/bash"]
     cap_add:
       - NET_ADMIN
+    stdin_open: true
+    tty: true
     environment:
-      ROS_DOMAIN_ID: "0"
+      ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
       ROS_LOCALHOST_ONLY: "0"
       RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
       ROUTE_POLICY: "drop-default"
@@ -48,7 +68,7 @@ networks:
     external: true
 ```
 
-## Compose: low radio
+Low radio:
 
 Pick a unique IP in `10.0.10.0/24`.
 
@@ -57,11 +77,13 @@ services:
   my_rover_lo_app:
     image: my_rover_app:latest
     entrypoint: ["/usr/local/bin/network_policy.sh"]
-    command: ["bash"]
+    command: ["/bin/bash"]
     cap_add:
       - NET_ADMIN
+    stdin_open: true
+    tty: true
     environment:
-      ROS_DOMAIN_ID: "0"
+      ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
       ROS_LOCALHOST_ONLY: "0"
       RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
       ROUTE_POLICY: "drop-default"
@@ -74,6 +96,52 @@ services:
 networks:
   bridge_lo:
     external: true
+```
+
+## Start script snippets
+
+Do not use `--network=host` for this radio setup. Pick one:
+
+High radio:
+
+```bash
+--network bridge_hi \
+--ip 10.0.20.X \
+-e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
+-e ROS_LOCALHOST_ONLY=0 \
+-e RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+-e ROUTE_POLICY=drop-default \
+-e FASTDDS_DEFAULT_PROFILES_FILE=/dds-configs/fastdds-rover-hi.xml \
+-e FASTRTPS_DEFAULT_PROFILES_FILE=/dds-configs/fastdds-rover-hi.xml \
+--entrypoint /usr/local/bin/network_policy.sh
+```
+
+Low radio:
+
+```bash
+--network bridge_lo \
+--ip 10.0.10.X \
+-e ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}" \
+-e ROS_LOCALHOST_ONLY=0 \
+-e RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+-e ROUTE_POLICY=drop-default \
+-e FASTDDS_DEFAULT_PROFILES_FILE=/dds-configs/fastdds-rover-lo.xml \
+-e FASTRTPS_DEFAULT_PROFILES_FILE=/dds-configs/fastdds-rover-lo.xml \
+--entrypoint /usr/local/bin/network_policy.sh
+```
+
+If the files are not baked into the image, mount them:
+
+```bash
+--volume="$(pwd)/container_scripts/network_policy.sh:/usr/local/bin/network_policy.sh:ro" \
+--volume="$(pwd)/dds-configs:/dds-configs:ro"
+```
+
+Your image command goes after the image name, for example:
+
+```bash
+ghcr.io/umroboticsteam/umrt-rover:main \
+/bin/bash
 ```
 
 ## Heavy internal topics
