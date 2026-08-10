@@ -1,15 +1,16 @@
 #
 # LAUNCH FOR BASE STATION SIDE
 #
-from ament_index_python.packages import get_package_share_directory
+from pathlib import Path
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    config_dir = get_package_share_directory("network_bridge")
-    base_hi_config = config_dir + "/config/base-hi.yaml"
-    base_lo_config = config_dir + "/config/base-lo.yaml"
+    config_dir = Path(__file__).resolve().parent
+    base_hi_config = str(config_dir / "base-hi.yaml")
+    base_lo_config = str(config_dir / "base-lo.yaml")
 
     return LaunchDescription(
         [

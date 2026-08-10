@@ -1,3 +1,5 @@
 base-1/
 rover-1/
 rough_notes.md
+__pycache__/
+*.py[cod]

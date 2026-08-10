@@ -17,30 +17,41 @@ Connects to x.20 interface
 | | Base Station | Rover |
 |--|--|--|
 | Low (900MHz) VLAN 10 | 10.0.10.57 | 10.0.10.59 |
-| High (2.4GHz) VLAN 20 | 10.0.20.57 | 10.0.10.59 |
+| High (2.4GHz) VLAN 20 | 10.0.20.57 | 10.0.20.59 |
 
 
 
 # Instructions
 
-## 1. Build image 
-Create image called bridge_test:v1
+## 1. Create VLAN 10/20 parent interfaces
 ```bash
-docker build -t bridge_test:v1 .
+sudo ./scripts/setup_parent_interfaces.sh <your_parent_network_interface>
 ```
 
-## 3. Create VLAN 10/20 and lo/hi docker nets
+## 2. Create lo/hi Docker networks
 ```bash
-./create_networks.sh <your_parent_network_interface>
+./scripts/create_docker_networks.sh
 ```
 
-## 4. Start Base Station or Rover Container 
+## 3. Start Base Station or Rover Container
 ```bash
-docker compose -f compose-base.yaml up -d
+./scripts/start_base.sh
+```
+Foxglove runs inside `bridge_base` and is published on the host at:
+```text
+ws://localhost:8765
 ```
 ```bash
-docker compose -f compose-rover.yaml up -d
+./scripts/start_rover.sh
 ```
+
+## 4. Start or restart network_bridge
+Run this after changing any launch or YAML config. The same script works on base and rover:
+```bash
+./scripts/restart_network_bridge.sh base
+./scripts/restart_network_bridge.sh rover
+```
+For adding existing app containers or `docker run` start scripts to the radio networks, see [docs/custom-container.md](docs/custom-container.md).
 
 ## Testing with topics
 Open an extra terminal in `bridge_rover` OR `bridge_base`
@@ -115,24 +126,18 @@ ros2 topic echo /rv_lo/telemetry
 ```
 
 # Connect with Foxglove UI on Base Station
-This is to enable connecting to the container from your host computer with Foxglove
-```bash
-./create_foxglove_host_bridge.sh <.20 interface name>
+Start the base container, then open Foxglove on the host and connect to:
 ```
-It might work differently than changing your host IP to be under the 10.0.1.x subet?
-
-Start Foxglove and open the connection to:
-```
-ws://10.0.20.57:8765
+ws://localhost:8765
 ```
 
 
 
 # Cleanup
-To clean up, run scripts:
+To stop containers:
 ```bash
-./remove_foxglove_bridge_host.sh
-./remove_networks.sh <your_parent_network_interface>
+docker compose -f compose/compose-base.yaml down
+docker compose -f compose/compose-rover.yaml down
 ```
 
 

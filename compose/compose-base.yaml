@@ -1,13 +1,12 @@
 name: bridge_base_stack
 
 x-ros-environment: &ros_environment
-  ROS_DOMAIN_ID: "0"
+  ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
   ROS_LOCALHOST_ONLY: "0"
   RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
-  ROUTE_POLICY: "drop-default"
 
 x-ros-container: &ros_container
-  image: "ghcr.io/umroboticsteam/umrt-build:main:v1"
+  image: "${BRIDGE_BASE_IMAGE:-ghcr.io/umroboticsteam/umrt-build:base}"
 
 services:
   bridge_base:
@@ -15,26 +14,30 @@ services:
     container_name: bridge_base
     stdin_open: true
     tty: true
-    command: ["sleep", "infinity"]
-    ports:
-      - "8765:8765"  # Expose default Foxglove UI Port
-    environment:
-      <<: *ros_environment
-    volumes:
-      - ./config/base-hi.yaml:/opt/ros/humble/share/network_bridge/config/base-hi.yaml:ro
-      - ./config/base-lo.yaml:/opt/ros/humble/share/network_bridge/config/base-lo.yaml:ro
-      - ./config/base.launch.py:/opt/ros/humble/share/network_bridge/launch/base.launch.py:ro
+    init: true
+    cap_add:
+      - NET_ADMIN
     command:
       - bash
       - -lc
-      - source /opt/ros/humble/setup.bash && ros2 launch network_bridge base.launch.py
+      - source /opt/ros/humble/setup.bash && exec ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=0.0.0.0 port:=8765
+    ports:
+      - "${FOXGLOVE_HOST_BIND:-0.0.0.0}:8765:8765/tcp"
+    environment:
+      <<: *ros_environment
+      BRIDGE_WORKSPACE: "/workspace/bridge_test"
+    volumes:
+      - "${REPO_DIR:-..}:/workspace/bridge_test"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57
       bridge_hi:
         ipv4_address: 10.0.20.57
+      foxglove_local: {}
 
 networks:
+  foxglove_local:
+    driver: bridge
   bridge_lo:
     external: true
   bridge_hi:
