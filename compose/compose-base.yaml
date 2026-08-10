@@ -1,13 +1,25 @@
+name: bridge_base_stack
+
+x-ros-environment: &ros_environment
+  ROS_DOMAIN_ID: "0"
+  ROS_LOCALHOST_ONLY: "0"
+  RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+  ROUTE_POLICY: "drop-default"
+
+x-ros-container: &ros_container
+  image: "ghcr.io/umroboticsteam/umrt-build:main:v1"
+
 services:
   bridge_base:
-    image: bridge_test:v1
+    <<: *ros_container
     container_name: bridge_base
     stdin_open: true
     tty: true
+    command: ["sleep", "infinity"]
     ports:
       - "8765:8765"  # Expose default Foxglove UI Port
     environment:
-      ROS_DOMAIN_ID: "1"
+      <<: *ros_environment
     volumes:
       - ./config/base-hi.yaml:/opt/ros/humble/share/network_bridge/config/base-hi.yaml:ro
       - ./config/base-lo.yaml:/opt/ros/humble/share/network_bridge/config/base-lo.yaml:ro
