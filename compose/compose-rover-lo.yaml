@@ -1,0 +1,20 @@
+services:
+  bridge_rover:
+    image: ghcr.io/umroboticsteam/umrt-build:main
+    container_name: bridge_rover_lo
+    stdin_open: true
+    tty: true
+    environment:
+      ROS_DOMAIN_ID: "2"
+#    devices:
+#      - "/dev/video0:/dev/video0" # expose USB cam testing
+    volumes:
+      - "${REPO_DIR:-..}:/workspace/bridge_test"
+    command: ["sleep", "infinity"]
+    networks:
+      bridge_lo:
+        ipv4_address: 10.0.10.59
+
+networks:
+  bridge_lo:
+    external: true

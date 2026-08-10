@@ -7,9 +7,9 @@
 
     UdpInterface:
       local_address: "10.0.10.59"
-      receive_port: 5012  # lo rover port
+      receive_port: 5159  # lo rover port
       remote_address: "10.0.10.57"
-      send_port: 5011     # lo base port
+      send_port: 5157     # lo base port
   
   
     default_rate: 100.0
