@@ -1,5 +1,6 @@
 # UMRT
 # Base Station Low
+# FROM BASE STATION TO ROVER LOW
 
 /**/*:
   ros__parameters:
@@ -17,5 +18,5 @@
     publish_stale_data: False
 
     topics:
-      - "/controls"
+      - "/cmd_velocity"
     

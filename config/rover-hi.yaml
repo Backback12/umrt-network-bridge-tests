@@ -1,5 +1,6 @@
 # UMRT
 # Rover High
+# FROM ROVER TO BASE STATION HIGH
 
 /**/*:
   ros__parameters:
@@ -17,4 +18,5 @@
     publish_stale_data: False
 
     topics:
-      - "/camera"
+      - "/rover/poe/encoded_video"
+      - "/arm_cam0/image_raw/ffmpeg"

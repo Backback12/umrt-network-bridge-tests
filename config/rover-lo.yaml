@@ -1,5 +1,6 @@
 # UMRT
 # Rover Low
+# FROM ROVER TO BASE STATION LOW
 
 /**/*:
   ros__parameters:
@@ -17,4 +18,4 @@
     publish_stale_data: False
 
     topics:
-      - "/telemetry"
+      - "/rover/poe/imu"
