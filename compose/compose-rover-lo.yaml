@@ -1,3 +1,5 @@
+name: rover_lo_stack
+
 services:
   bridge_rover:
     image: ghcr.io/umroboticsteam/umrt-build:main

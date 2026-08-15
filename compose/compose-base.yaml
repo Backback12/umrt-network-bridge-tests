@@ -28,6 +28,9 @@ services:
       BRIDGE_WORKSPACE: "/workspace/bridge_test"
     volumes:
       - "${REPO_DIR:-..}:/workspace/bridge_test"
+      - "${REPO_DIR:-..}/config/base-hi.yaml:/opt/ros/humble/share/network_bridge/config/base-hi.yaml:ro"
+      - "${REPO_DIR:-..}/config/base-lo.yaml:/opt/ros/humble/share/network_bridge/config/base-lo.yaml:ro"
+      - "${REPO_DIR:-..}/config/base.launch.py:/opt/ros/humble/share/network_bridge/launch/base.launch.py:ro"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57
