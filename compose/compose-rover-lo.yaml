@@ -2,17 +2,24 @@ name: rover_lo_stack
 
 services:
   bridge_rover:
-    image: ghcr.io/umroboticsteam/umrt-build:main
+    image: "${BRIDGE_ROVER_IMAGE:-ghcr.io/umroboticsteam/umrt-build:comms-zenoh-bridge}"
     container_name: bridge_rover_lo
     stdin_open: true
     tty: true
+    init: true
     environment:
       ROS_DOMAIN_ID: "2"
+      ROS_LOCALHOST_ONLY: "0"
+      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      BRIDGE_WORKSPACE: "/workspace/bridge_test"
 #    devices:
 #      - "/dev/video0:/dev/video0" # expose USB cam testing
     volumes:
       - "${REPO_DIR:-..}:/workspace/bridge_test"
-    command: ["sleep", "infinity"]
+    command:
+      - bash
+      - -lc
+      - exec /workspace/bridge_test/scripts/run_zenoh_stack.sh rover-lo
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.59

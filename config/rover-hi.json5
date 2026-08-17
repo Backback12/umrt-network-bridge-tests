@@ -1,0 +1,35 @@
+{
+  mode: "client",
+  connect: {
+    endpoints: [
+      "tcp/10.0.20.57:7447",
+    ],
+  },
+  scouting: {
+    multicast: {
+      enabled: false,
+    },
+    gossip: {
+      enabled: false,
+    },
+  },
+  plugins: {
+    ros2dds: {
+      id: "umrt_rover_hi",
+      nodename: "zenoh_bridge_rover_hi",
+      ros_localhost_only: false,
+      allow: {
+        publishers: [
+          "^/rover/poe/encoded_video$",
+          "^/arm_cam0/image_raw/ffmpeg$",
+          "^/camera$",
+        ],
+        subscribers: [],
+        service_servers: [],
+        service_clients: [],
+        action_servers: [],
+        action_clients: [],
+      },
+    },
+  },
+}

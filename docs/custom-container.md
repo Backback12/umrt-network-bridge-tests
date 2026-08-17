@@ -104,41 +104,53 @@ If the script already has `--network`, replace it with the correct radio network
 
 ## Update the bridged topics
 
-Only edit the rover-side network bridge configs:
+Only edit the rover-side Zenoh bridge configs:
 
 ```text
-config/rover-hi.yaml
-config/rover-lo.yaml
+config/rover-hi.json5
+config/rover-lo.json5
 ```
 
-The `topics:` list is the allowlist of rover topics that should be sent toward base. Use the full topic names directly. Do not add `subscribe_namespace` or `publish_namespace`.
+The `allow.publishers` list is the rover-to-base allowlist. The `allow.subscribers` list is the base-to-rover allowlist. Use full topic names as anchored regular expressions.
 
 High radio example:
 
-```yaml
-topics:
-  - "/bs_hi/camera"
-  - "/bs_hi/compressed_camera"
+```json5
+allow: {
+  publishers: [
+    "^/camera$",
+    "^/compressed_camera$",
+  ],
+  subscribers: [],
+}
 ```
 
 Low radio example:
 
-```yaml
-topics:
-  - "/bs_lo/telemetry"
-  - "/bs_lo/heartbeat"
+```json5
+allow: {
+  publishers: [
+    "^/telemetry$",
+    "^/heartbeat$",
+  ],
+  subscribers: [
+    "^/controls$",
+  ],
+}
 ```
 
-After editing either rover config, restart the rover-side `network_bridge` process so it reloads the YAML:
+After editing either rover config, recreate the rover-side stack so it reloads the JSON5:
 
 ```bash
-./scripts/restart_network_bridge.sh rover
+docker compose -f compose/compose-rover-lo.yaml up -d --force-recreate
+docker compose -f compose/compose-rover-hi.yaml up -d --force-recreate
+docker compose -f compose/compose-rover-both.yaml up -d --force-recreate
 ```
 
-If you edited the base configs in this repo, reload the base bridge with:
+If you edited the base configs in this repo, recreate the base stack with:
 
 ```bash
-./scripts/restart_network_bridge.sh base
+docker compose -f compose/compose-base.yaml up -d --force-recreate
 ```
 
 Foxglove is launched inside `bridge_base` by:
@@ -170,4 +182,4 @@ source /opt/ros/humble/setup.bash
 ros2 topic list
 ```
 
-If a topic is visible locally but not on base, make sure it is listed exactly in `config/rover-hi.yaml` or `config/rover-lo.yaml`, then restart the rover bridge.
+If a topic is visible locally but not on base, make sure it is listed exactly in `config/rover-hi.json5` or `config/rover-lo.json5`, then recreate the rover stack.
