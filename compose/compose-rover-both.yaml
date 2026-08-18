@@ -9,15 +9,15 @@ services:
       ROS_DOMAIN_ID: "2"
       ROS_LOCALHOST_ONLY: "0"
       RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
-      BRIDGE_WORKSPACE: "/workspace/bridge_test"
+      BRIDGE_WORKSPACE: "/workspace/umrt-network-bridge-tests"
 #    devices:
 #      - "/dev/video0:/dev/video0" # expose USB cam testing
     volumes:
-      - "${REPO_DIR:-..}:/workspace/bridge_test"
+      - "${REPO_DIR:-..}:/workspace/umrt-network-bridge-tests"
     command:
       - bash
       - -lc
-      - exec /workspace/bridge_test/scripts/run_zenoh_stack.sh rover-both
+      - exec /workspace/umrt-network-bridge-tests/scripts/run_zenoh_stack.sh rover-both
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.59

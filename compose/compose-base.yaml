@@ -20,14 +20,14 @@ services:
     command:
       - bash
       - -lc
-      - exec /workspace/bridge_test/scripts/run_zenoh_stack.sh base
+      - exec /workspace/umrt-network-bridge-tests/scripts/run_zenoh_stack.sh base
     ports:
       - "${FOXGLOVE_HOST_BIND:-0.0.0.0}:8765:8765/tcp"
     environment:
       <<: *ros_environment
-      BRIDGE_WORKSPACE: "/workspace/bridge_test"
+      BRIDGE_WORKSPACE: "/workspace/umrt-network-bridge-tests"
     volumes:
-      - "${REPO_DIR:-..}:/workspace/bridge_test"
+      - "${REPO_DIR:-..}:/workspace/umrt-network-bridge-tests"
     networks:
       bridge_lo:
         ipv4_address: 10.0.10.57

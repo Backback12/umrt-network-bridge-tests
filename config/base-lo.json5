@@ -1,4 +1,5 @@
 {
+  id: "ba5e10",
   mode: "router",
   listen: {
     endpoints: [
@@ -15,7 +16,6 @@
   },
   plugins: {
     ros2dds: {
-      id: "umrt_base_lo",
       nodename: "zenoh_bridge_base_lo",
       ros_localhost_only: false,
       allow: {

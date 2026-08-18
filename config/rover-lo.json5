@@ -1,4 +1,5 @@
 {
+  id: "c0de10",
   mode: "client",
   connect: {
     endpoints: [
@@ -15,7 +16,6 @@
   },
   plugins: {
     ros2dds: {
-      id: "umrt_rover_lo",
       nodename: "zenoh_bridge_rover_lo",
       ros_localhost_only: false,
       allow: {

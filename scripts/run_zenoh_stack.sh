@@ -76,7 +76,12 @@ case "${role}" in
 esac
 
 require_zenoh_bridge
+
+# ROS setup scripts can reference unset variables, so source them with nounset off
+# while keeping strict mode for this launcher.
+set +u
 source /opt/ros/humble/setup.bash
+set -u
 
 case "${role}" in
   base)
