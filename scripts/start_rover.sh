@@ -31,7 +31,8 @@ case "${variant}" in
     ;;
 esac
 
-docker compose -f "${compose_file}" up -d
+# docker compose -f "${compose_file}" up -d
+docker compose -f "${compose_file}" up
 
 echo "Rover container (${stack_name}) is up."
 echo "Zenoh bridges start automatically with the container."

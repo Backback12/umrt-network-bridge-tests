@@ -20,7 +20,7 @@
       ros_localhost_only: false,
       allow: {
         publishers: [
-          "^/cmd_velocity$",
+          "^/rover_controller/cmd_vel_unstamped$",
           "^/controls$",
         ],
         subscribers: [

@@ -24,7 +24,7 @@
           "^/telemetry$",
         ],
         subscribers: [
-          "^/cmd_velocity$",
+          "^/rover_controller/cmd_vel_unstamped$",
           "^/controls$",
         ],
         service_servers: [],
